@@ -1,46 +1,24 @@
 #!/usr/bin/python3
-"""
-index
-"""
-
-from flask import jsonify
+""" API """
+from flask import Flask, jsonify
 from api.v1.views import app_views
-
 from models import storage
 
 
-@app_views.route("/status", methods=['GET'], strict_slashes=False)
+@app_views.route('/status',  methods=['GET'], strict_slashes=False)
 def status():
-    """
-    status route
-    :return: response with json
-    """
-    data = {
-        "status": "OK"
-    }
-
-    resp = jsonify(data)
-    resp.status_code = 200
-
-    return resp
+    """Status method that returns a JSON: """
+    return jsonify({'status': 'OK'})
 
 
-@app_views.route("/stats", methods=['GET'], strict_slashes=False)
+@app_views.route('/stats', methods=['GET'], strict_slashes=False)
 def stats():
-    """
-    stats of all objs route
-    :return: json of all objs
-    """
-    data = {
-        "amenities": storage.count("Amenity"),
-        "cities": storage.count("City"),
-        "places": storage.count("Place"),
-        "reviews": storage.count("Review"),
-        "states": storage.count("State"),
-        "users": storage.count("User"),
-    }
-
-    resp = jsonify(data)
-    resp.status_code = 200
-
-    return resp
+    """Stats methods that return the number of objects"""
+    objs = ['Amenity', 'City', 'Place', 'Review', 'State', 'User']
+    name_objs = ['amenities', 'cities', 'places', 'reviews', 'states', 'users']
+    dic_objs = {}
+    num_obj = 0
+    for clss in objs:
+        dic_objs[name_objs[num_obj]] = storage.count(clss)
+        num_obj += 1
+    return jsonify(dic_objs)

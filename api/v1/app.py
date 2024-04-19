@@ -1,45 +1,34 @@
 #!/usr/bin/python3
-"""
-app
-"""
-
-from flask import Flask, jsonify
-from flask_cors import CORS
-from os import getenv
-
-from api.v1.views import app_views
+""" Status of your API """
+from flask import Flask, make_response, jsonify, render_template
 from models import storage
+from api.v1.views import app_views
+from os import getenv
+from flask_cors import CORS
 
 
 app = Flask(__name__)
-
-CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
-
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.register_blueprint(app_views)
+cors = CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
 
 
 @app.teardown_appcontext
-def teardown(exception):
-    """
-    teardown function
-    """
+def teardown_app_context(self):
+    """Remove the current SQLAlchemySession"""
     storage.close()
 
 
 @app.errorhandler(404)
-def handle_404(exception):
-    """
-    handles 404 error
-    :return: returns 404 json
-    """
-    data = {
-        "error": "Not found"
-    }
+def not_found(error):
+    """Handler 404 error"""
+    return make_response(jsonify({"error": "Not found"}), 404)
 
-    resp = jsonify(data)
-    resp.status_code = 404
-
-    return(resp)
-
-if __name__ == "__main__":
-    app.run(getenv("HBNB_API_HOST"), getenv("HBNB_API_PORT"))
+if __name__ == '__main__':
+    host = '0.0.0.0'
+    port = '5000'
+    if getenv('HBNB_API_HOST'):
+        host = getenv('HBNB_API_HOST')
+    if getenv('HBNB_API_PORT'):
+        port = getenv('HBNB_API_PORT')
+    app.run(host=host, port=port, threaded=True)
